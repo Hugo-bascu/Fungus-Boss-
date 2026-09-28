@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fungus Boss</title>
+<style>
+  :root{
+    --navy:#1c2a4a;
+    --cream:#efe6dd;
+    --cream-2:#e3d6c9;
+    --orange:#d99a5b;
+    --white:#ffffff;
+    --text:#1c2a4a;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  *{box-sizing:border-box;}
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --cream:#e9ded2; --cream-2:#ddceBd;
+    }
+  }
+  body{
+    margin:0;
+    font-family:'Trebuchet MS','Segoe UI',sans-serif;
+    background:var(--cream);
+    color:var(--text);
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+  }
+  .blob{position:absolute; z-index:0; pointer-events:none;}
+  .blob svg{display:block; width:100%; height:100%;}
+  .blob-tl{top:0; left:0; width:38vw; max-width:340px; height:220px;}
+  .blob-tr{top:0; right:0; width:38vw; max-width:340px; height:220px;}
+  .blob-bl{bottom:0; left:0; width:48vw; max-width:420px; height:260px;}
+  .blob-br{bottom:0; right:0; width:48vw; max-width:420px; height:260px;}
+
+  header{
+    position:relative; z-index:2;
+    text-align:center;
+    padding:56px 20px 8px;
+  }
+  .logo-wrap{display:flex; justify-content:center; margin-bottom:10px;}
+  h1{
+    font-size:clamp(28px,6vw,44px);
+    letter-spacing:6px;
+    margin:6px 0 0;
+    color:var(--navy);
+    font-weight:800;
+  }
+  .question{
+    max-width:640px;
+    margin:18px auto 26px;
+    font-size:clamp(16px,2.6vw,21px);
+    line-height:1.4;
+    color:var(--navy);
+    position:relative;
+    z-index:2;
+  }
+  .search-row{
+    max-width:500px;
+    margin:0 auto;
+    position:relative;
+    z-index:2;
+    padding:0 20px;
+  }
+  .search-box{
+    display:flex;
+    align-items:center;
+    background:var(--white);
+    border-radius:26px;
+    padding:12px 18px;
+    box-shadow:0 2px 6px rgba(0,0,0,.08);
+    border:1px solid rgba(0,0,0,.05);
+  }
+  .search-box svg{flex-shrink:0; margin-right:10px;}
+  .search-box input{
+    flex:1;
+    border:none;
+    outline:none;
+    font-size:16px;
+    background:transparent;
+    color:var(--navy);
+  }
+  .search-box button.clear{
+    border:none; background:none; cursor:pointer; font-size:16px; color:#888;
+    padding:4px;
+  }
+  .go-btn{
+    display:block;
+    margin:18px auto 0;
+    background:var(--navy);
+    color:var(--cream);
+    border:none;
+    padding:12px 30px;
+    border-radius:24px;
+    font-size:15px;
+    letter-spacing:2px;
+    cursor:pointer;
+    position:relative; z-index:2;
+  }
+  .go-btn:hover{opacity:.9;}
+
+  .chips{
+    max-width:600px;
+    margin:18px auto 0;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    justify-content:center;
+    position:relative; z-index:2;
+    padding:0 20px;
+  }
+  .chip{
+    background:var(--white);
+    border:1px solid var(--orange);
+    color:var(--navy);
+    padding:6px 14px;
+    border-radius:16px;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .chip:hover{background:var(--orange); color:var(--white);}
+
+  main{
+    position:relative; z-index:2;
+    max-width:760px;
+    margin:0 auto;
+    padding:20px 20px 80px;
+  }
+  #results{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:14px;
+    margin-top:10px;
+  }
+  .card{
+    background:var(--white);
+    border-radius:14px;
+    padding:16px 18px;
+    box-shadow:0 2px 8px rgba(0,0,0,.06);
+  }
+  .card h3{margin:0 0 6px; color:var(--navy); font-size:16px;}
+  .card p{margin:0; font-size:14px; color:#444; line-height:1.4;}
+  .empty-msg{
+    text-align:center;
+    color:#777;
+    font-size:14px;
+    margin-top:10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="blob blob-tl">
+<svg viewBox="0 0 300 220" preserveAspectRatio="none"><path d="M0,0 H260 C300,0 300,40 260,60 C200,90 220,150 150,150 C80,150 60,80 0,90 Z" fill="var(--navy)"/><path d="M5,10 C60,-5 80,50 150,55 C210,60 230,20 280,15" fill="none" stroke="var(--orange)" stroke-width="3"/></svg>
+</div>
+<div class="blob blob-tr">
+<svg viewBox="0 0 300 220" preserveAspectRatio="none"><path d="M300,0 H40 C0,0 0,40 40,60 C100,90 80,150 150,150 C220,150 240,80 300,90 Z" fill="var(--navy)"/><path d="M295,10 C240,-5 220,50 150,55 C90,60 70,20 20,15" fill="none" stroke="var(--orange)" stroke-width="3"/></svg>
+</div>
+<div class="blob blob-bl">
+<svg viewBox="0 0 340 260" preserveAspectRatio="none"><path d="M0,260 V60 C60,20 90,90 150,110 C220,135 240,200 340,180 V260 Z" fill="var(--navy)"/><path d="M10,250 C70,210 110,240 160,190 C210,140 240,180 320,150" fill="none" stroke="var(--orange)" stroke-width="3"/></svg>
+</div>
+<div class="blob blob-br">
+<svg viewBox="0 0 340 260" preserveAspectRatio="none"><path d="M340,260 V60 C280,20 250,90 190,110 C120,135 100,200 0,180 V260 Z" fill="var(--navy)"/><path d="M330,250 C270,210 230,240 180,190 C130,140 100,180 20,150" fill="none" stroke="var(--orange)" stroke-width="3"/></svg>
+</div>
+
+<header>
+  <div class="logo-wrap">
+    <svg width="140" height="70" viewBox="0 0 140 70" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="140" height="70" fill="none"/>
+      <!-- trees left -->
+      <circle cx="14" cy="30" r="9" fill="#3f6b3f"/>
+      <rect x="12" y="36" width="4" height="10" fill="#7a5230"/>
+      <circle cx="10" cy="50" r="7" fill="#3f6b3f"/>
+      <rect x="8.5" y="55" width="3" height="8" fill="#7a5230"/>
+      <!-- trees right -->
+      <circle cx="126" cy="30" r="9" fill="#3f6b3f"/>
+      <rect x="124" y="36" width="4" height="10" fill="#7a5230"/>
+      <circle cx="130" cy="50" r="7" fill="#3f6b3f"/>
+      <rect x="128.5" y="55" width="3" height="8" fill="#7a5230"/>
+      <!-- buildings left -->
+      <rect x="24" y="18" width="12" height="28" fill="var(--navy)"/>
+      <rect x="27" y="22" width="3" height="4" fill="var(--orange)"/>
+      <rect x="32" y="22" width="3" height="4" fill="var(--orange)"/>
+      <rect x="27" y="30" width="3" height="4" fill="var(--orange)"/>
+      <rect x="32" y="30" width="3" height="4" fill="var(--orange)"/>
+      <!-- buildings right -->
+      <rect x="104" y="18" width="12" height="28" fill="var(--navy)"/>
+      <rect x="107" y="22" width="3" height="4" fill="var(--orange)"/>
+      <rect x="112" y="22" width="3" height="4" fill="var(--orange)"/>
+      <rect x="107" y="30" width="3" height="4" fill="var(--orange)"/>
+      <rect x="112" y="30" width="3" height="4" fill="var(--orange)"/>
+      <!-- road -->
+      <path d="M50,70 L58,15 L82,15 L90,70 Z" fill="#555"/>
+      <line x1="70" y1="18" x2="70" y2="66" stroke="#fff" stroke-width="2" stroke-dasharray="6,6"/>
+    </svg>
+  </div>
+  <h1>FUNGUS BOSS</h1>
+</header>
+
+<p class="question">¿Qué le gustaría hacer en su tiempo libre o qué deporte o hobby le llama la atención?</p>
+
+<div class="search-row">
+  <div class="search-box">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="searchInput" type="text" placeholder="Escribe algo que te guste... (ej. música, aire libre, deporte)" />
+    <button class="clear" onclick="clearSearch()">✕</button>
+  </div>
+</div>
+
+<div class="chips" id="chips"></div>
+
+<button class="go-btn" onclick="recomendar()">BUSCAR</button>
+
+<main>
+  <div id="results"></div>
+  <p class="empty-msg" id="emptyMsg" style="display:none;">No encontré una categoría exacta para eso, pero aquí tienes algunas ideas generales:</p>
+</main>
+
+<script>
+const DB = {
+  "deporte": ["Salir a correr o andar en bici por el barrio", "Apuntarte a un equipo local de fútbol, baloncesto o vóley", "Probar una clase de escalada o pádel"],
+  "ejercicio": ["Hacer una rutina corta de entrenamiento en casa", "Salir a caminar 30 minutos al aire libre", "Probar yoga o estiramientos para relajarte"],
+  "musica": ["Aprender a tocar un instrumento con tutoriales gratuitos", "Crear una playlist nueva y descubrir artistas", "Ir a un concierto o jam session local"],
+  "arte": ["Dibujar o pintar durante 20 minutos sin presión", "Probar un tutorial de manualidades reciclando materiales", "Visitar una exposición o museo gratuito"],
+  "leer": ["Sacar un libro de la biblioteca pública", "Unirte a un club de lectura", "Probar un libro de un género que nunca hayas leído"],
+  "lectura": ["Sacar un libro de la biblioteca pública", "Unirte a un club de lectura"],
+  "cocinar": ["Probar una receta nueva y económica", "Cocinar algo con amigos o familia", "Ver un video de cocina y replicarlo"],
+  "amigos": ["Organizar una tarde de juegos de mesa", "Quedar para dar un paseo y charlar", "Planear una salida barata al parque"],
+  "aire libre": ["Ir de excursión a un parque cercano", "Montar en bici por rutas naturales", "Hacer un picnic con lo que tengas en casa"],
+  "naturaleza": ["Ir de excursión a un parque cercano", "Hacer senderismo un fin de semana", "Cuidar plantas en casa"],
+  "dinero": ["Buscar planes gratuitos: parques, bibliotecas, museos con entrada libre", "Organizar juegos de mesa o cine en casa con amigos", "Aprovechar rutas de senderismo o playa cercanas, sin coste"],
+  "movil": ["Fijar límites de tiempo de pantalla con recordatorios", "Sustituir 15 minutos de móvil por un paseo o lectura", "Probar un hobby manual (dibujo, música) para desconectar"],
+  "tecnologia": ["Aprender a programar con recursos gratuitos", "Probar a montar un pequeño proyecto electrónico", "Editar fotos o vídeos como afición"],
+  "peliculas": ["Organizar una maratón de películas con amigos", "Descubrir cine de otro país o época", "Ver un documental sobre un tema que te interese"],
+  "series": ["Empezar una serie nueva recomendada por amigos", "Ver un documental sobre un tema curioso"],
+  "escribir": ["Llevar un diario personal", "Escribir relatos cortos o poesía", "Empezar un blog sobre algo que te apasione"],
+  "videojuegos": ["Jugar online con amigos a algo cooperativo", "Probar un juego indie distinto a lo habitual", "Organizar un torneo casero"],
+  "voluntariado": ["Buscar asociaciones locales que necesiten ayuda", "Participar en una jornada de limpieza o reforestación", "Ayudar en una protectora de animales"],
+  "animales": ["Pasear perros de una protectora local", "Visitar una granja o refugio de animales", "Aprender sobre una especie que te interese"],
+  "ducha": ["Reducir el tiempo de ducha a 5 minutos con temporizador", "Cerrar el grifo mientras te enjabonas", "Instalar un cabezal de ducha ahorrador"],
+  "agua": ["Cerrar el grifo mientras te enjabonas o lavas los dientes", "Reutilizar agua de cocina para plantas", "Ducharte en vez de bañarte para ahorrar agua"],
+  "instituto": ["Preparar la mochila y ropa la noche anterior", "Poner varias alarmas escalonadas", "Crear una rutina fija de sueño para adaptarte poco a poco"],
+  "horario": ["Ir ajustando la hora de dormir poco a poco cada día", "Preparar todo la noche anterior para ganar tiempo", "Evitar pantallas la última hora antes de dormir"],
+  "baile": ["Aprender coreografías por video tutoriales", "Apuntarte a una clase de baile local", "Organizar una tarde de baile con amigos"],
+  "fotografia": ["Salir a hacer fotos por tu ciudad", "Aprender edición básica de fotos", "Crear un pequeño álbum temático"],
+  "playa": ["Ir a la playa a nadar o tomar el sol", "Hacer una sesión de vóley playa con amigos", "Dar un paseo al atardecer por la orilla", "Probar paddle surf o bodyboard si hay donde alquilar"],
+  "viajar": ["Planear una escapada de un día a un pueblo cercano", "Explorar tu propia ciudad como si fueras turista", "Ahorrar un poco cada semana para un viaje futuro"],
+  "jardineria": ["Cuidar plantas de interior o un pequeño huerto", "Aprender a hacer esquejes de tus plantas favoritas", "Organizar una zona verde en el balcón o patio"],
+  "moda": ["Renovar looks combinando ropa que ya tienes", "Aprender técnicas básicas de costura o arreglos", "Crear un tablero de inspiración de estilo"],
+  "meditacion": ["Practicar 10 minutos de respiración consciente al día", "Probar una app o video guiado de meditación", "Escribir 3 cosas por las que estás agradecido cada noche"],
+  "manualidades": ["Reciclar materiales para crear algo nuevo", "Probar origami o scrapbooking", "Hacer regalos hechos a mano para amigos o familia"],
+  "compras": ["Organizar un intercambio de ropa con amigos en vez de comprar", "Hacer una lista de deseos y comparar precios antes de comprar", "Explorar mercadillos o tiendas de segunda mano"]
+};
+
+// Palabras clave (sinónimos) que apuntan a cada categoría de DB.
+// Así una frase libre como "me gusta practicar futbol" también encuentra "deporte".
+const SYNONYMS = {
+  "deporte": ["deporte","deportes","futbol","fútbol","baloncesto","basket","voleibol","voley","tenis","running","correr","gimnasio","pádel","padel","natación","natacion","nadar","ciclismo","bici","bicicleta","escalar","escalada","entrenar","partido","equipo"],
+  "ejercicio": ["ejercicio","entrenamiento","entrenar","gimnasio","rutina","estirar","estiramientos","cardio"],
+  "musica": ["musica","música","cantar","guitarra","piano","instrumento","concierto","canciones","escuchar musica"],
+  "arte": ["arte","dibujar","dibujo","pintar","pintura","manualidades","creativo","museo"],
+  "leer": ["leer","lectura","libro","libros","novela"],
+  "cocinar": ["cocinar","cocina","recetas","receta","hornear","repostería","reposteria"],
+  "amigos": ["amigos","amigas","quedar","socializar","gente"],
+  "aire libre": ["aire libre","exterior","parque","excursion","excursión","picnic"],
+  "naturaleza": ["naturaleza","senderismo","montaña","montana","campo","plantas"],
+  "dinero": ["dinero","gratis","gratuito","ahorrar","sin dinero","barato","economico","económico"],
+  "movil": ["movil","móvil","celular","telefono","teléfono","pantalla","redes sociales","instagram","tiktok"],
+  "tecnologia": ["tecnologia","tecnología","programar","programacion","programación","ordenador","codigo","código"],
+  "peliculas": ["pelicula","película","peliculas","películas","cine"],
+  "series": ["serie","series","netflix"],
+  "escribir": ["escribir","escritura","diario","poesia","poesía","relatos"],
+  "videojuegos": ["videojuego","videojuegos","jugar","gaming","consola"],
+  "voluntariado": ["voluntariado","voluntario","ong","ayudar"],
+  "animales": ["animal","animales","perro","perros","gato","gatos","mascota","mascotas"],
+  "ducha": ["ducha","duchar","duchar me","bañar","bañarme"],
+  "agua": ["agua","grifo","ahorrar agua"],
+  "instituto": ["instituto","colegio","escuela","clases","madrugar"],
+  "horario": ["horario","despertar","dormir","sueño","sueno"],
+  "baile": ["baile","bailar","danza"],
+  "fotografia": ["fotografia","fotografía","foto","fotos","camara","cámara"],
+  "playa": ["playa","mar","nadar","sol","costa","arena","surf","bodyboard","vóley playa","voley playa"],
+  "viajar": ["viajar","viaje","viajes","turismo","escapada","conocer sitios","vacaciones"],
+  "jardineria": ["jardin","jardín","jardineria","jardinería","plantas","huerto","macetas"],
+  "moda": ["moda","ropa","estilo","vestir","costura"],
+  "meditacion": ["meditar","meditacion","meditación","relajarme","relajar","mindfulness","respirar"],
+  "manualidades": ["manualidades","manualidad","reciclar","diy","hacer cosas con las manos"],
+  "compras": ["compras","comprar","tienda","tiendas","mercadillo"]
+};
+
+// Sugerencias generales para cuando no se detecta ninguna categoría concreta
+const GENERIC = [
+  "Prueba algo nuevo: apúntate a una actividad que nunca hayas hecho",
+  "Sal a dar un paseo y despeja la mente",
+  "Queda con amigos o familia para pasar un rato juntos",
+  "Dedica un rato a un hobby creativo: dibujar, escribir o tocar música"
+];
+
+const chipWords = ["deporte","música","aire libre","dinero","móvil","amigos","leer","cocinar"];
+const chipsEl = document.getElementById('chips');
+chipWords.forEach(w=>{
+  const b=document.createElement('button');
+  b.className='chip'; b.textContent=w;
+  b.onclick=()=>{document.getElementById('searchInput').value=w; recomendar();};
+  chipsEl.appendChild(b);
+});
+
+function normalize(s){
+  return s.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .trim();
+}
+
+function recomendar(){
+  const raw = document.getElementById('searchInput').value;
+  const q = normalize(raw);
+  const resultsEl = document.getElementById('results');
+  const emptyMsg = document.getElementById('emptyMsg');
+  resultsEl.innerHTML = '';
+
+  if(!q){ emptyMsg.style.display='none'; return; }
+
+  const foundCategories = new Set();
+
+  // 1) Coincidencia directa por nombre de categoría (por si escriben la palabra exacta)
+  for(const key in DB){
+    if(q.includes(normalize(key))) foundCategories.add(key);
+  }
+
+  // 2) Coincidencia por sinónimos, palabra a palabra dentro de la frase escrita
+  for(const category in SYNONYMS){
+    for(const syn of SYNONYMS[category]){
+      const normSyn = normalize(syn);
+      if(q.includes(normSyn)){
+        foundCategories.add(category);
+        break;
+      }
+    }
+  }
+
+  let matches = [];
+  foundCategories.forEach(cat=>{
+    if(DB[cat]) matches = matches.concat(DB[cat]);
+  });
+  matches = [...new Set(matches)];
+
+  if(matches.length===0){
+    // No se reconoció ninguna categoría: lo decimos mencionando su búsqueda, y damos ideas generales
+    emptyMsg.textContent = `Todavía no tengo ideas específicas para "${raw.trim()}", pero mientras la app aprende más, aquí tienes algunas ideas generales:`;
+    emptyMsg.style.display='block';
+    GENERIC.forEach(m=>{
+      const card=document.createElement('div');
+      card.className='card';
+      card.innerHTML = `<h3>Idea</h3><p>${m}</p>`;
+      resultsEl.appendChild(card);
+    });
+    return;
+  }
+  emptyMsg.style.display='none';
+  matches.slice(0,6).forEach(m=>{
+    const card=document.createElement('div');
+    card.className='card';
+    card.innerHTML = `<h3>Idea</h3><p>${m}</p>`;
+    resultsEl.appendChild(card);
+  });
+}
+
+function clearSearch(){
+  document.getElementById('searchInput').value='';
+  document.getElementById('results').innerHTML='';
+  document.getElementById('emptyMsg').style.display='none';
+}
+
+document.getElementById('searchInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter') recomendar();
+});
+</script>
+</body>
+</html>
